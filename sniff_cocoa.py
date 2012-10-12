@@ -29,6 +29,7 @@ class SniffCocoa:
                         | NSRightMouseUpMask
                         | NSMouseMovedMask 
                         | NSScrollWheelMask)
+                sc.find_window()
                 NSEvent.addGlobalMonitorForEventsMatchingMask_handler_(mask, sc.handler)
         return AppDelegate
 
@@ -42,27 +43,65 @@ class SniffCocoa:
     def cancel(self):
         AppHelper.stopEventLoop()
     
-    def handler(self, event):
+    def get_window_name(self, window):
+        window_name = u""
+        try:
+            window_name = window['kCGWindowName']
+        except KeyError as e:
+            # Try to find a solution
+
+            # Account for Microsoft Office, which sometimes does not populate the window name 
+            if window['kCGWindowOwnerName'] in [u"Microsoft " + x 
+                                                for x in [u"Word", u"Excel", u"PowerPoint", u"Outlook", u"Entourage"]]:
+                from subprocess import Popen, PIPE
+                cmd = """osascript -e 'tell application "System Events"' \
+    -e 'set window_name to name of the first window of (the first process whose frontmost is true)' \ 
+    -e 'end tell' """
+
+                try:
+                    window_name = Popen(cmd, shell=True, stdout=PIPE).stdout.read()
+                except Error as e:
+                    print e
+
+            if window_name == u"":
+                # Lame default case                                                                                                                                                                        
+                window_name =  window['kCGWindowOwnerName'] + u"-" + str(window['kCGWindowNumber'])
+
+            return window_name
+
+    def find_window(self):
         try:
             activeApps = self.workspace.runningApplications()
+            
             #Have to look into this if it is too slow on move and scoll,
             #right now the check is done for everything.
+
             for app in activeApps:
                 if app.isActive():
-                    options = kCGWindowListOptionOnScreenOnly 
+                    options = kCGWindowListOptionOnScreenOnly
                     windowList = CGWindowListCopyWindowInfo(options,
                                                             kCGNullWindowID)
                     for window in windowList:
                         if window['kCGWindowOwnerName'] == app.localizedName():
-                            geometry = window['kCGWindowBounds'] 
+                            geometry = window['kCGWindowBounds']
+                            window_name = self.get_window_name(window)
                             self.screen_hook(window['kCGWindowOwnerName'],
-                                             window['kCGWindowName'],
-                                             geometry['X'], 
-                                             geometry['Y'], 
-                                             geometry['Width'], 
+                                             window_name,
+                                             geometry['X'],
+                                             geometry['Y'],
+                                             geometry['Width'],
                                              geometry['Height'])
                             break
                     break
+        except (Exception, KeyboardInterrupt) as e:
+            print e
+            AppHelper.stopEventLoop()
+
+
+    def handler(self, event):
+        try:
+            self.find_window
+
             loc = NSEvent.mouseLocation()
             if event.type() == NSLeftMouseDown:
                 self.mouse_button_hook(1, loc.x, loc.y)
