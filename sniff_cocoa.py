@@ -89,16 +89,15 @@ class SniffCocoa:
                     print e
 
             if window_name == u"":
-                # Lame default case                                                                                                                                                                        
+                # Lame default case
                 window_name =  window['kCGWindowOwnerName'] + u"-" + str(window['kCGWindowNumber'])
-
-            return window_name
+        return window_name
 
     def find_window(self):
         try:
             activeApps = self.workspace.runningApplications()
             
-            #Have to look into this if it is too slow on move and scoll,
+            #Have to look into this if it is too slow on move and scroll,
             #right now the check is done for everything.
 
             for app in activeApps:
@@ -109,7 +108,8 @@ class SniffCocoa:
                     for window in windowList:
                         if window['kCGWindowOwnerName'] == app.localizedName():
                             geometry = window['kCGWindowBounds']
-											 window_name = self.get_window_name(window)
+                            window_name = self.get_window_name(window)
+                            print window_name
                             self.screen_hook(window['kCGWindowOwnerName'],
                                              window_name,
                                              geometry['X'],
@@ -125,7 +125,7 @@ class SniffCocoa:
 
     def handler(self, event):
         try:
-            self.find_window
+            self.find_window()
 
             loc = NSEvent.mouseLocation()
             if event.type() == NSLeftMouseDown:
