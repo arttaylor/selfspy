@@ -33,29 +33,6 @@ class SniffCocoa:
                         | NSScrollWheelMask)
                 sc.find_window()
                 NSEvent.addGlobalMonitorForEventsMatchingMask_handler_(mask, sc.handler)
-                self.statusbar = NSStatusBar.systemStatusBar()
-                self.statusItem = self.statusbar.statusItemWithLength_(NSVariableStatusItemLength)
-                self.statusItem.setTitle_(u'Spy')
-                self.statusItem.setHighlightMode_(True)
-
-                self.menu = NSMenu.alloc().init()
-             
-                self.menuItemQuit = NSMenuItem.alloc().init()
-                self.menuItemQuit.setTitle_(u'Quit Selfspy')
-                self.menuItemQuit.setAction_(self.quit)
-                self.menuItemQuit.setKeyEquivalent_(u'')
-                self.menuItemQuit.setEnabled_(True)
-
-                self.menu.addItem_(self.menuItemQuit)
-                self.statusItem.setMenu_(self.menu)
-
-                self.statusItem.setEnabled_(True)
-                self.keysLogged()
-            def quit(self):
-                AppHelper.stopEventLoop()
-            def keysLogged(self):
-                self.menuItemKeysLogged.setTitle_(u'Keys logged: {0}'.format(1))
-
         return AppDelegate
 
     def run(self):
