@@ -33,29 +33,6 @@ class SniffCocoa:
                         | NSScrollWheelMask)
                 sc.find_window()
                 NSEvent.addGlobalMonitorForEventsMatchingMask_handler_(mask, sc.handler)
-                self.statusbar = NSStatusBar.systemStatusBar()
-                self.statusItem = self.statusbar.statusItemWithLength_(NSVariableStatusItemLength)
-                self.statusItem.setTitle_(u'Spy')
-                self.statusItem.setHighlightMode_(True)
-
-                self.menu = NSMenu.alloc().init()
-             
-                self.menuItemQuit = NSMenuItem.alloc().init()
-                self.menuItemQuit.setTitle_(u'Quit Selfspy')
-                self.menuItemQuit.setAction_(self.quit)
-                self.menuItemQuit.setKeyEquivalent_(u'')
-                self.menuItemQuit.setEnabled_(True)
-
-                self.menu.addItem_(self.menuItemQuit)
-                self.statusItem.setMenu_(self.menu)
-
-                self.statusItem.setEnabled_(True)
-                self.keysLogged()
-            def quit(self):
-                AppHelper.stopEventLoop()
-            def keysLogged(self):
-                self.menuItemKeysLogged.setTitle_(u'Keys logged: {0}'.format(1))
-
         return AppDelegate
 
     def run(self):
@@ -67,31 +44,42 @@ class SniffCocoa:
 
     def cancel(self):
         AppHelper.stopEventLoop()
+
+    def read_command(self, command):
+        from subprocess import Popen, PIPE
+        return Popen(command, shell=True, stdout=PIPE).stdout.read()
+
+    def get_ms_name(self, application):
+        if  application == u"Microsoft Excel":
+            cmd = """osascript<<END
+tell application "Microsoft Excel"
+	get name of active workbook
+end tell
+END"""
+            return self.read_command(cmd)
+        return u""
+
     
     def get_window_name(self, window):
         window_name = u""
         try:
             window_name = window['kCGWindowName']
         except KeyError as e:
-            # Try to find a solution
+            print e
 
-            # Account for Microsoft Office, which sometimes does not populate the window name 
-            if window['kCGWindowOwnerName'] in [u"Microsoft " + x 
-                                                for x in [u"Word", u"Excel", u"PowerPoint", u"Outlook", u"Entourage"]]:
-                from subprocess import Popen, PIPE
-                cmd = """osascript -e 'tell application "System Events"' \
-    -e 'set window_name to name of the first window of (the first process whose frontmost is true)' \ 
-    -e 'end tell' """
-
-                try:
-                    window_name = Popen(cmd, shell=True, stdout=PIPE).stdout.read()
-                except Error as e:
-                    print e
-
-            if window_name == u"":
-                # Lame default case
-                window_name =  window['kCGWindowOwnerName'] + u"-" + str(window['kCGWindowNumber'])
-        return window_name
+        # Try to find a solution
+        # Account for Microsoft Office, which sometimes does not populate the window name 
+        if window['kCGWindowOwnerName'] in [u"Microsoft %s" % (x) 
+                                            for x in [u"Word", u"Excel", u"PowerPoint", u"Outlook", u"Entourage"]]:
+            try:
+                window_name = self.get_ms_name(window['kCGWindowOwnerName'])                 
+            except Error as e:
+                print e 
+        if window_name == u"":
+            # Lame default case
+            print window['kCGWindowOwnerName']
+            window_name =  window['kCGWindowOwnerName'] + u"-" + str(window['kCGWindowNumber'])
+        return window_name.strip()
 
     def find_window(self):
         try:

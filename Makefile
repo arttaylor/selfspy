@@ -1,9 +1,23 @@
-build:
-	echo "Nothing to build. Only install. Destination is: " $(DESTDIR)
+INSTALL_DIR	= /var/lib/selfspy
+DATA_DIR	= ~/.selfspy
+SRCS		= activity_store.py password_dialog.py selfstats.py \
+                  check_password.py period.py sniff_cocoa.py \
+                  models.py selfspy.py sniff_x.py
+all: install
 
-install:
-	mkdir -p $(DESTDIR)/var/lib/selfspy
-	cp *.py $(DESTDIR)/var/lib/selfspy
-	mkdir -p ~/.selfspy
-	ln -s $(DESTDIR)/var/lib/selfspy/selfspy.py $(DESTDIR)/usr/bin/selfspy
-	ln -s $(DESTDIR)/var/lib/selfspy/selfstats.py $(DESTDIR)/usr/bin/selfstats
+install: copy $(DATA_DIR) /usr/bin/selfspy /usr/bin/selfstats
+
+$(INSTALL_DIR):
+	mkdir -p $@
+
+$(DATA_DIR):
+	mkdir -p $@
+
+copy: $(SRCS) $(INSTALL_DIR)
+	cp $(SRCS) $(INSTALL_DIR)
+
+/usr/bin/selfspy:
+	ln -s /var/lib/selfspy/selfspy.py $@
+
+/usr/bin/selfstats:
+	ln -s /var/lib/selfspy/selfstats.py $@
