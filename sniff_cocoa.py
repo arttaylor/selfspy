@@ -78,37 +78,32 @@ END"""
                 print e 
         if window_name == u"":
             # Lame default case
-            print window['kCGWindowOwnerName']
             window_name =  window['kCGWindowOwnerName'] + u"-" + str(window['kCGWindowNumber'])
         return window_name.strip()
 
     def find_window(self):
-        try:
-            activeApps = self.workspace.runningApplications()
+        activeApps = self.workspace.runningApplications()
             
-            #Have to look into this if it is too slow on move and scroll,
-            #right now the check is done for everything.
+        #Have to look into this if it is too slow on move and scroll,
+        #right now the check is done for everything.
 
-            for app in activeApps:
-                if app.isActive():
-                    options = kCGWindowListOptionOnScreenOnly
-                    windowList = CGWindowListCopyWindowInfo(options,
-                                                            kCGNullWindowID)
-                    for window in windowList:
-                        if (window['kCGWindowNumber'] == event.windowNumber() 
-                            or (not event.windowNumber()
-                                and window['kCGWindowOwnerName'] == app.localizedName())):
-                            window_name = self.get_window_name(window)
-                            print window_name
-                            geometry = window['kCGWindowBounds'] 
-                            self.screen_hook(window['kCGWindowOwnerName'],
-                                             window_name,
-                                             geometry['X'], 
-                                             geometry['Y'], 
-                                             geometry['Width'], 
-                                             geometry['Height'])
-                            break
-                    break
+        for app in activeApps:
+            if app.isActive():
+                options = kCGWindowListOptionOnScreenOnly
+                windowList = CGWindowListCopyWindowInfo(options,
+                                                        kCGNullWindowID)
+                for window in windowList:
+                    if window['kCGWindowOwnerName'] == app.localizedName():
+                        geometry = window['kCGWindowBounds'] 
+                        window_name = self.get_window_name(window)
+                        self.screen_hook(window['kCGWindowOwnerName'],
+                                         window_name,
+                                         geometry['X'], 
+                                         geometry['Y'], 
+                                         geometry['Width'], 
+                                         geometry['Height'])
+                        break
+                break
 
 
     def handler(self, event):
