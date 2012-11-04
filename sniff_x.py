@@ -1,21 +1,22 @@
 # This file is loosely based on examples/record_demo.py in python-xlib
 
 import sys
-import os
-import re
-import time
-import threading
 
 from Xlib import X, XK, display
 from Xlib.ext import record
 from Xlib.error import XError
 from Xlib.protocol import rq
 
-def state_to_idx(state): #this could be a dict, but I might want to extend it.
-    if state == 1: return 1
-    if state == 128: return 4
-    if state == 129: return 5
+
+def state_to_idx(state):  # this could be a dict, but I might want to extend it.
+    if state == 1:
+        return 1
+    if state == 128:
+        return 4
+    if state == 129:
+        return 5
     return 0
+
 
 class SniffX:
     def __init__(self):
@@ -27,9 +28,9 @@ class SniffX:
         self.key_hook = lambda x: True
         self.mouse_button_hook = lambda x: True
         self.mouse_move_hook = lambda x: True
-        self.screen_hook = lambda x : True
+        self.screen_hook = lambda x: True
 
-        self.contextEventMask = [X.KeyPress, X.MotionNotify] #X.MappingNotify?
+        self.contextEventMask = [X.KeyPress, X.MotionNotify]
         
         self.the_display = display.Display()
         self.record_display = display.Display()
@@ -80,22 +81,20 @@ class SniffX:
             return
 
         cur_class, cur_window, cur_name = self.get_cur_window()
-        if not cur_class is None:
-            cur_geo = self.get_cur_geometry(cur_window)
-            if not cur_geo is None:
-                self.screen_hook(cur_class.decode('latin1'), 
+        if cur_class:
+            cur_geo = self.get_geometry(cur_window)
+            if cur_geo:
+                self.screen_hook(cur_class, 
                                  cur_name, 
                                  cur_geo.x,
                                  cur_geo.y,
-                                 geo.width,
-                                 geo.height)        
+                                 cur_geo.width,
+                                 cur_geo.height)
 
         data = reply.data
         while len(data):
-            event, data = rq.EventField(None).parse_binary_value(data,
-                                                                 self.record_display.display, 
-                                                                 None, 
-                                                                 None)
+            ef = rq.EventField(None)
+            event, data = ef.parse_binary_value(data, self.record_display.display, None, None)
             if event.type in [X.KeyPress]: 
                 # X.KeyRelease, we don't log this anyway
                 self.key_hook(*self.key_event(event))
@@ -108,20 +107,29 @@ class SniffX:
                 self.the_display.refresh_keyboard_mapping()
                 newkeymap = self.the_display._keymap_codes
                 print 'Change keymap!', newkeymap == self.keymap
-                self.keymap = newkeymap
-                
+                self.keymap = newkeymap   
 
     def get_key_name(self, keycode, state):
         state_idx = state_to_idx(state)
         cn = self.keymap[keycode][state_idx]
         if cn < 256:
-            return chr(cn).decode('latin1')#.encode('utf8')
+            return chr(cn).decode('latin1')
         else:
             return self.lookup_keysym(cn)
 
     def key_event(self, event):
+        flags = event.state
+        modifiers = []
+        if flags & X.ControlMask:
+            modifiers.append('Ctrl')
+        if flags & X.Mod1Mask:  # Mod1 is the alt key
+            modifiers.append('Alt')
+        if flags & X.Mod4Mask:  # Mod4 should be super/windows key
+            modifiers.append('Super')
+        if flags & X.ShiftMask:
+            modifiers.append('Shift')
         return (event.detail, 
-                event.state.upper(), 
+                modifiers,
                 self.get_key_name(event.detail, event.state),
                 event.sequence_number == 1)
     
@@ -132,7 +140,6 @@ class SniffX:
         if keysym in self.keysymdict:
             return self.keysymdict[keysym]
         return "[%d]" % keysym
-
 
     def get_cur_window(self):
         i = 0
@@ -149,12 +156,16 @@ class SniffX:
                         return None, None, None
             
                     cur_name = cur_window.get_wm_name()
-                    cur_class = cur_window.get_wm_class()[1]
-                    if cur_class is None:
+                    cur_class = cur_window.get_wm_class()
+
+                    if cur_class:
+                        cur_class = cur_class[1]
+                    if not cur_class:
                         cur_window = cur_window.query_tree().parent
             except XError:
                 i += 1
-        return cur_class, cur_window, cur_name
+            break
+        return cur_class.decode('latin1'), cur_window, cur_name.decode('latin1')
 
     def get_geometry(self, cur_window):
         i = 0
@@ -166,9 +177,3 @@ class SniffX:
             except XError:
                 i += 1
         return geo
-
-        
-
-    
-
-

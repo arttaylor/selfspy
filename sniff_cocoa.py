@@ -6,9 +6,9 @@ from Cocoa import (NSEvent,
                    NSRightMouseUp, NSRightMouseDown, NSRightMouseUpMask, NSRightMouseDownMask,
                    NSMouseMoved, NSMouseMovedMask,
                    NSScrollWheel, NSScrollWheelMask,
+                   NSFlagsChanged, NSFlagsChangedMask,
                    NSAlternateKeyMask, NSCommandKeyMask, NSControlKeyMask,
-                   NSStatusBar, NSVariableStatusItemLength,
-                   NSMenu, NSMenuItem, NSShiftKeyMask, NSAlphaShiftKeyMask)
+                   NSShiftKeyMask, NSAlphaShiftKeyMask)
 from Quartz import CGWindowListCopyWindowInfo, kCGWindowListOptionOnScreenOnly, kCGNullWindowID
 from PyObjCTools import AppHelper
 
@@ -30,7 +30,8 @@ class SniffCocoa:
                         | NSRightMouseDownMask 
                         | NSRightMouseUpMask
                         | NSMouseMovedMask 
-                        | NSScrollWheelMask)
+                        | NSScrollWheelMask
+                        | NSFlagsChangedMask)
                 sc.find_window()
                 NSEvent.addGlobalMonitorForEventsMatchingMask_handler_(mask, sc.handler)
         return AppDelegate
@@ -94,21 +95,20 @@ END"""
                     windowList = CGWindowListCopyWindowInfo(options,
                                                             kCGNullWindowID)
                     for window in windowList:
-                        if window['kCGWindowOwnerName'] == app.localizedName():
-                            geometry = window['kCGWindowBounds']
+                        if (window['kCGWindowNumber'] == event.windowNumber() 
+                            or (not event.windowNumber()
+                                and window['kCGWindowOwnerName'] == app.localizedName())):
                             window_name = self.get_window_name(window)
                             print window_name
+                            geometry = window['kCGWindowBounds'] 
                             self.screen_hook(window['kCGWindowOwnerName'],
                                              window_name,
-                                             geometry['X'],
+                                             geometry['X'], 
                                              geometry['Y'], 
                                              geometry['Width'], 
                                              geometry['Height'])
                             break
                     break
-        except (Exception, KeyboardInterrupt) as e:
-            print e
-            AppHelper.stopEventLoop()
 
 
     def handler(self, event):
@@ -133,9 +133,9 @@ END"""
                     self.mouse_button_hook(6, loc.x, loc.y)
                 elif event.deltaX() < 0:
                     self.mouse_button_hook(7, loc.x, loc.y)
-#               if event.deltaX() > 0:
+#               if event.deltaZ() > 0:
 #                   self.mouse_button_hook(8, loc.x, loc.y)
-#               elif event.deltaX() < 0:
+#               elif event.deltaZ() < 0:
 #                   self.mouse_button_hook(9, loc.x, loc.y)
             elif event.type() == NSKeyDown:
                 flags = event.modifierFlags()
@@ -165,11 +165,6 @@ END"""
         except (Exception, KeyboardInterrupt):
             AppHelper.stopEventLoop()
             raise
-
-
-if __name__ == '__main__':
-    sc = SniffCocoa()
-    sc.run()
 
 # Cocoa does not provide a good api to get the keycodes, therefore we
 # have to provide our own.

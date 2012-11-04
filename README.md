@@ -1,19 +1,19 @@
 ### What is this?
-Selfspy is a daemon for Unix/X11 that continuously monitors and stores what you are doing on your computer. This way, you can get all sorts of nifty statistics and reminders on what you have been up to. It is inspired by the [Quantified Self](http://en.wikipedia.org/wiki/Quantified_Self)-movement and [Stephen Wolfram's personal key logging](http://blog.stephenwolfram.com/2012/03/the-personal-analytics-of-my-life/).
+Selfspy is a daemon for Unix/X11 and (thanks to @ljos!) Mac OS X, that continuously monitors and stores what you are doing on your computer. This way, you can get all sorts of nifty statistics and reminders on what you have been up to. It is inspired by the [Quantified Self](http://en.wikipedia.org/wiki/Quantified_Self)-movement and [Stephen Wolfram's personal key logging](http://blog.stephenwolfram.com/2012/03/the-personal-analytics-of-my-life/).
 
 See Example Statistics, below, for some of the fabulous things you can do with this data.
 
-*If you are a Windows or OSX programmer, I think that it would be fairly easy to get Selfspy to run there too, by creating an alternative to the X11-specific sniff_x.py. If anyone wants to experiment with that, I look forward to your patches.*
+*If you are a Windows programmer, I think that it would be fairly easy to get Selfspy to run there too, by creating an alternative to sniff_x.py and sniff_cocoa.py. If anyone wants to experiment with that, I look forward to your patches.*
 
 ### Installing Selfspy
 
-I have a PPA for Ubuntu here:
+I have a PPA for Ubuntu 12.04 here:
 https://launchpad.net/~gurgeh/+archive/selfspy
 
 If you run ArchLinux, here is an AUR package:
 https://aur.archlinux.org/packages.php?ID=58501
 
-To install manually, either clone the repository from Github (git clone git://github.com/gurgeh/selfspy), or click on the Download link on http://gurgeh.github.com/selfspy/ to get the latest Python source.
+To install manually, either clone the repository from Github (git clone git://github.com/gurgeh/selfspy), or click on the Download link on http://github.com/gurgeh/selfspy/ to get the latest Python source.
 
 Selfspy is only tested with Python 2.7 and has a few dependencies on other Python libraries that need to be satisfied. These are documented in the requirements.txt file. If you have *pip* installed, installing the dependencies is a simple matter of running `pip install -r requirements.txt`. You will need subversion installed for pip to install python-xlib.
 
