@@ -54,7 +54,7 @@ def pretty_seconds(secs):
         outs += '%dh ' % hours
     secs -= hours * 3600
 
-    
+
     minutes = secs / 60
     if minutes:
         active = True
@@ -63,9 +63,9 @@ def pretty_seconds(secs):
     secs -= minutes * 60
 
     outs += '%ds' % secs
-        
+
     return outs
-    
+
 
 def make_time_string(dates, clock):
     now = datetime.datetime.now()
@@ -86,7 +86,7 @@ def make_time_string(dates, clock):
         if len(dates) == 2:
             if now > now2:
                 now = now.replace(year=now.year - 1)
-    
+
         if len(dates) == 1:
             if now > now2:
                 m = now.month - 1
@@ -104,7 +104,7 @@ def make_time_string(dates, clock):
         except ValueError:
             print 'Malformed clock', clock
             sys.exit(1)
-        
+
         now = now.replace(hour=hour, minute=minute, second=0)
 
         if now > now2:
@@ -126,7 +126,7 @@ def make_period(q, period, who, start, prop):
             print '--limit unit "%s" not one of %s' % (period[1], PERIOD_LOOKUP.keys())
             sys.exit(1)
         d[PERIOD_LOOKUP[period[1]]] = val
-    
+
     if start:
         return q.filter(prop <= start + datetime.timedelta(**d))
     else:
@@ -149,7 +149,7 @@ class Selfstats:
         self.inmouse = False
 
         self.check_needs()
-    
+
     def do(self):
         if self.need_summary:
             self.calc_summary()
@@ -232,7 +232,7 @@ class Selfstats:
 
         if self.args['min_keys'] is not None:
             q = q.filter(Keys.nrkeys >= self.args['min_keys'])
-        
+
         if self.args['body']:
             try:
                 bodrex = re.compile(self.args['body'], re.I)
@@ -246,7 +246,7 @@ class Selfstats:
         else:
             for x in q:
                 yield x
-        
+
     def filter_clicks(self):
         self.inmouse = True
         q = self.filter_prop(models.Click, models.Click.created_at)
@@ -284,7 +284,7 @@ class Selfstats:
                 if key not in d1:
                     d1[key] = 0
                 d1[key] += val
-                
+
             if self.need_activity:
                 if 'activity' not in d1:
                     d1['activity'] = Period(self.need_activity)
@@ -321,7 +321,7 @@ class Selfstats:
             if self.need_window:
                 updict(windows, d, timings, sub=click.window.title)
             updict(sumd, d, timings)
-        
+
         self.processes = processes
         self.windows = windows
         self.summary = sumd
@@ -339,7 +339,7 @@ class Selfstats:
             act = self.summary.get('activity')
             if act: act = act.calc_total()
             else: act = 0
-            print 'Total time active:', 
+            print 'Total time active:',
             print pretty_seconds(act)
             print
 
@@ -390,7 +390,7 @@ class Selfstats:
             for name, data in wdata:
                 print '%s, %s' % (name, pretty_seconds(data['active_time']))
             print
-        
+
         if self.args['periods']:
             print 'Active periods:'
             for t1,t2 in self.summary['activity'].times:
@@ -412,7 +412,7 @@ class Selfstats:
             print 'Mouse movements / Keys: %.1f' % (mousings / keys)
             print 'Mouse movements / Clicks: %.1f' % (mousings / clicks)
             print
-            
+
 
 def parse_config():
     conf_parser = argparse.ArgumentParser(description=__doc__, add_help=False,
@@ -449,7 +449,7 @@ def parse_config():
     parser.add_argument('-T', '--title', type=str, metavar='regexp', help='Only allow entries where a search for this <regexp> in the window title matches something. All regular expressions are case insensitive.')
     parser.add_argument('-P', '--process', type=str, metavar='regexp', help='Only allow entries where a search for this <regexp> in the process matches something.')
     parser.add_argument('-B', '--body', type=str, metavar='regexp', help='Only allow entries where a search for this <regexp> in the body matches something. Do not use this filter when summarizing ratios or activity, as it has no effect on mouse clicks. Requires password.')
- 
+
     parser.add_argument('--clicks', action='store_true', help='Summarize number of mouse button clicks for all buttons.')
 
     parser.add_argument('--key-freqs', action='store_true', help='Summarize a table of absolute and relative number of keystrokes for each used key during the time period. Requires password.')
@@ -474,14 +474,14 @@ if __name__ == '__main__':
     args['data_dir'] = os.path.expanduser(args['data_dir'])
 
     ss = Selfstats(os.path.join(args['data_dir'], DBNAME), args)
-    
+
     if args['limit']:
         try:
             int(args['limit'][0])
         except ValueError:
             print 'First argument to --limit must be an integer'
             sys.exit(1)
-        
+
 
     if ss.need_text or ss.need_keys:
         if args['password'] is None:

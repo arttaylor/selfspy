@@ -13,13 +13,13 @@ def get_password(verify=None):
     else:
         pw = get_tk_password(verify)
     return pw
-        
+
 
 
 def get_tk_password(verify):
     root = Tk()
     root.withdraw()
-    
+
     while True:
         pw = tkSimpleDialog.askstring(title='Selfspy encryption password', prompt='Password', show='*', parent=root)
 
@@ -28,7 +28,7 @@ def get_tk_password(verify):
         if not verify: break
         if verify(pw): break
     return pw
-        
+
 
 if __name__ == '__main__':
     print get_password()

@@ -73,7 +73,7 @@ if __name__ == '__main__':
 
     def check_with_encrypter(password):
         encrypter = make_encrypter(password)
-        return check_password.check(args['data_dir'], encrypter) 
+        return check_password.check(args['data_dir'], encrypter)
 
     try:
         os.makedirs(args['data_dir'])
@@ -112,10 +112,10 @@ if __name__ == '__main__':
         print 'Password failed'
         sys.exit(1)
 
-#    with context:    
-    astore = ActivityStore(os.path.join(args['data_dir'], DBNAME), 
+#    with context:
+    astore = ActivityStore(os.path.join(args['data_dir'], DBNAME),
                            encrypter, store_text=(not args['no_text']))
-                        
+
     try:
         astore.run()
     except SystemExit:

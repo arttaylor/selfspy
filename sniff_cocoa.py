@@ -23,13 +23,13 @@ class SniffCocoa:
         sc = self
         class AppDelegate(NSObject):
             def applicationDidFinishLaunching_(self, notification):
-                mask = (NSKeyDownMask 
+                mask = (NSKeyDownMask
                         | NSKeyUpMask
-                        | NSLeftMouseDownMask 
+                        | NSLeftMouseDownMask
                         | NSLeftMouseUpMask
-                        | NSRightMouseDownMask 
+                        | NSRightMouseDownMask
                         | NSRightMouseUpMask
-                        | NSMouseMovedMask 
+                        | NSMouseMovedMask
                         | NSScrollWheelMask
                         | NSFlagsChangedMask)
                 sc.find_window()
@@ -60,7 +60,7 @@ END"""
             return self.read_command(cmd)
         return u""
 
-    
+
     def get_window_name(self, window):
         window_name = u""
         try:
@@ -69,13 +69,13 @@ END"""
             print e
 
         # Try to find a solution
-        # Account for Microsoft Office, which sometimes does not populate the window name 
-        if window['kCGWindowOwnerName'] in [u"Microsoft %s" % (x) 
+        # Account for Microsoft Office, which sometimes does not populate the window name
+        if window['kCGWindowOwnerName'] in [u"Microsoft %s" % (x)
                                             for x in [u"Word", u"Excel", u"PowerPoint", u"Outlook", u"Entourage"]]:
             try:
-                window_name = self.get_ms_name(window['kCGWindowOwnerName'])                 
+                window_name = self.get_ms_name(window['kCGWindowOwnerName'])
             except Error as e:
-                print e 
+                print e
         if window_name == u"":
             # Lame default case
             window_name =  window['kCGWindowOwnerName'] + u"-" + str(window['kCGWindowNumber'])
@@ -83,7 +83,7 @@ END"""
 
     def find_window(self):
         activeApps = self.workspace.runningApplications()
-            
+
         #Have to look into this if it is too slow on move and scroll,
         #right now the check is done for everything.
 
@@ -94,13 +94,13 @@ END"""
                                                         kCGNullWindowID)
                 for window in windowList:
                     if window['kCGWindowOwnerName'] == app.localizedName():
-                        geometry = window['kCGWindowBounds'] 
+                        geometry = window['kCGWindowBounds']
                         window_name = self.get_window_name(window)
                         self.screen_hook(window['kCGWindowOwnerName'],
                                          window_name,
-                                         geometry['X'], 
-                                         geometry['Y'], 
-                                         geometry['Width'], 
+                                         geometry['X'],
+                                         geometry['Y'],
+                                         geometry['Width'],
                                          geometry['Height'])
                         break
                 break
@@ -149,8 +149,8 @@ END"""
                 if event.keyCode() is 36:
                     character = "Enter"
                 elif event.keyCode() is 51:
-                    character = "Backspace"                    
-                self.key_hook(event.keyCode(), 
+                    character = "Backspace"
+                self.key_hook(event.keyCode(),
                               modifiers,
                               keycodes.get(character,
                                            character),

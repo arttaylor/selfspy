@@ -31,7 +31,7 @@ class Period:
         else:
             self.times.insert(i, (time, time + self.cutoff))
             maybe_merge(i)
-            
+
 
     def extend(self, times):
         for time in times:
